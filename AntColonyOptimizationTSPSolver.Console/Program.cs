@@ -3,6 +3,7 @@ using AntColonyOptimizationTSPSolver.Console;
 using AntColonyOptimizationTSPSolver.Core;
 
 var startup = new Startup();
-var @class = new Class1(startup.Configuration.ProblemName, startup.Configuration.TspLibPath);
-@class.Run();
+var logger = new Logger();
+var solver = new Solver(startup.Configuration, logger);
+solver.Run();
 Console.ReadKey();

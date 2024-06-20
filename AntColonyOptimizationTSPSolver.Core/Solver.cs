@@ -1,24 +1,25 @@
 ﻿using AntColonyOptimizationTSPSolver.Core.Graph;
+using AntColonyOptimizationTSPSolver.Core.Interfaces;
 using TspLibNet;
 
 namespace AntColonyOptimizationTSPSolver.Core
 {
     public class Class1
     {
-        private readonly string _problemName;
-        private readonly string _tspLibPath;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger _logger;
 
-        public Class1(string problemName, string tspLibPath)
+        public Class1(IConfiguration configuration, ILogger logger)
         {
-            _problemName = problemName;
-            _tspLibPath = tspLibPath;
+            _configuration = configuration;
+            _logger = logger;
         }
 
         public void Run()
         {
             try
             {
-                var tsp = LoadTsp(_problemName, ProblemType.TSP);
+                var tsp = LoadTsp(_configuration.ProblemName, ProblemType.TSP);
                 //var dantzig42 = LoadTSPDantzig42();
                 //var brazil58 = LoadTSPBrazil58();
                 LoadTspGraph(tsp.Problem);
@@ -32,12 +33,12 @@ namespace AntColonyOptimizationTSPSolver.Core
 
         private TspLib95Item LoadTsp(string problemName, ProblemType type)
         {
-            var tspLib = new TspLib95(_tspLibPath);
+            var tspLib = new TspLib95(_configuration.TspLibPath);
             tspLib.LoadTSP(problemName);
             var item = tspLib.GetItemByName(problemName, ProblemType.TSP);
 
-            Console.WriteLine($"Problem {item.Problem.Name}: {item.Problem.Comment}");
-            Console.WriteLine($"Known optimal TSP solution: {item.OptimalTourDistance}");
+            _logger.Log($"Problem {item.Problem.Name}: {item.Problem.Comment}");
+            _logger.Log($"Known optimal TSP solution: {item.OptimalTourDistance}");
             return item;
         }
         
@@ -57,9 +58,9 @@ namespace AntColonyOptimizationTSPSolver.Core
                     }
                 });
             });
-            Console.WriteLine($"Graph reading finished...");
-            Console.WriteLine($"Nodes: {graph.VertexCount}");
-            Console.WriteLine($"Edges: {graph.EdgeCount}");
+            _logger.Log($"Graph reading finished...");
+            _logger.Log($"Nodes: {graph.VertexCount}");
+            _logger.Log($"Edges: {graph.EdgeCount}");
             return graph;
         }
     }
