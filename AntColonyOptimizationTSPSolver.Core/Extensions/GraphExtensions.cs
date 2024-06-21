@@ -1,4 +1,6 @@
 ﻿using AntColonyOptimizationTSPSolver.Core.Graph;
+using AntColonyOptimizationTSPSolver.Core.Interfaces;
+using System.Text;
 
 namespace AntColonyOptimizationTSPSolver.Core.Extensions
 {
@@ -14,5 +16,17 @@ namespace AntColonyOptimizationTSPSolver.Core.Extensions
         }
 
         public static TspEdge GetRandomEdge(this IEnumerable<TspEdge> @enumerable) => @enumerable.ElementAt(rng.Next(@enumerable.Count()));
+
+        public static void LogPath(this ILogger logger, IEnumerable<TspEdge> path)
+        {
+            var first = true;
+            var sb = new StringBuilder();
+            foreach(var step in path)
+            {
+                sb.Append(first ? $"{step.Source} -{step.Weight}-> {step.Target}" : $" -{step.Weight}-> {step.Target}");
+                first = false;
+            }
+            logger.Log(sb.ToString());
+        }
     }
 }

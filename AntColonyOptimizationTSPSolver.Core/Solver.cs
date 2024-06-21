@@ -16,7 +16,7 @@ namespace AntColonyOptimizationTSPSolver.Core
         {
             _configuration = configuration;
             _logger = logger;
-            _acoAlgorithm = new AntColonyOptimizationAlgorithm(logger, 1, 1);
+            _acoAlgorithm = new AntColonyOptimizationAlgorithm(logger, antCount: 300, iterations: 100);
         }
 
         public void Run()
@@ -29,9 +29,9 @@ namespace AntColonyOptimizationTSPSolver.Core
                 var graph = LoadTspGraph(tsp.Problem);
                 var path = _acoAlgorithm.Solve(graph);
 
+                _logger.Log($"Known optimal TSP solution: {tsp.OptimalTourDistance}");
                 _logger.Log($"Best distance: {path.CalculateDistance()}");
-                foreach(var edge in path)
-                    _logger.Log($"{edge.Source} --{edge.Weight}--> {edge.Target}");
+                _logger.LogPath(path);
             }
             catch (Exception e) {
                 Console.WriteLine(e.ToString());
@@ -45,10 +45,9 @@ namespace AntColonyOptimizationTSPSolver.Core
         {
             var tspLib = new TspLib95(_configuration.TspLibPath);
             tspLib.LoadTSP(problemName);
-            var item = tspLib.GetItemByName(problemName, ProblemType.TSP);
+            var item = tspLib.GetItemByName(problemName, type);
 
             _logger.Log($"Problem {item.Problem.Name}: {item.Problem.Comment}");
-            _logger.Log($"Known optimal TSP solution: {item.OptimalTourDistance}");
             return item;
         }
         

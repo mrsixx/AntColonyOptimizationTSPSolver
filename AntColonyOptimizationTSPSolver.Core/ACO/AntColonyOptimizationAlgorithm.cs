@@ -8,10 +8,11 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
 {
     public class AntColonyOptimizationAlgorithm : IAntColonyOptimizationAlgorithm
     {
-        public const double ALPHA = 0.5;
-        public const double BETA = 1.2;
-        public const double PHEROMONE_EVAPORATION_RATE = 0.40;
-        public const double PHEROMONE_CONSTANT = 1000.0;
+        public const double ALPHA = 0.9; // weight of distance factor
+        public const double BETA = 1.2; // weight of pheromone factor
+        public const double RHO = 0.01; // pheromone evaporation rate
+        public const double INITIAL_PHEROMONE_AMOUNT = 0.001; //initial pheromone amount
+        public const double PHEROMONE_UPDATE_CONSTANT = 5000.0;
 
         private readonly int _antCount;
         private readonly int _iterations;
@@ -29,13 +30,15 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
             Colony colony = new();
 
             _logger.Log($"Starting ACO algorithm with following parameters:");
-            _logger.Log($"Alpha = {ALPHA}; Beta = {BETA}; Pheromone evaporation rate = {PHEROMONE_EVAPORATION_RATE}; Pheromone constant = {PHEROMONE_CONSTANT}.");
+            _logger.Log($"Alpha = {ALPHA}; Beta = {BETA}; Rho = {RHO}; Pheromone constant = {PHEROMONE_UPDATE_CONSTANT}.");
             sw.Start();
             for (int i = 0; i < _iterations; i++)
             {
                 _logger.Log($"\nGenerating {_antCount} artificial ants from #{i + 1}th wave...");
                 Ant[] ants = GenerateAntsWave(graph, i);
+                _logger.Log($"#{i + 1}th wave ants start to walk...");
                 WaitForAntsToStop(ants);
+                _logger.Log($"#{i + 1}th wave ants has stopped!");
                 colony.UpdateBestPath(ants);
             }
             sw.Stop();
@@ -48,11 +51,7 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
             return colony.BestPath;
         }
 
-        private static void WaitForAntsToStop(Ant[] ants)
-        {
-            foreach (var ant in ants)
-                ant.Thread.Join();
-        }
+        private static void WaitForAntsToStop(Ant[] ants) => Task.WaitAll(ants.Select(a => a.Task).ToArray());
 
         private Ant[] GenerateAntsWave(TspGraph graph, int i)
         {

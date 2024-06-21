@@ -11,8 +11,9 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
             Id = id;
             Generation = generation;
             Graph = graph;
-            Thread = new Thread(WalkAround);
-            Thread.Start();
+            UnvisitedNodes = graph.Vertices.ToList();
+            Task = new Task(() => WalkAround());
+            Task.Start();
         }
 
         public int Id { get; }
@@ -22,8 +23,10 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
         public int StartNode { get; private set; }
 
         public TspGraph Graph { get; }
+
+        public List<int> UnvisitedNodes { get; }
         
-        public Thread Thread { get; }
+        public Task Task { get; }
 
         public List<TspEdge> Path { get; } = new List<TspEdge>();
 
@@ -31,27 +34,40 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
 
         private void WalkAround()
         {
-            Console.WriteLine($"Ant #{Id} start to walk...");
             StartNode = new Random().Next(1, Graph.VertexCount);
+            UnvisitedNodes.Remove(StartNode);
             var currentNode = StartNode;
             while (true)
             {
-                if (!Graph.TryGetOutEdges(currentNode, out IEnumerable<TspEdge> possibleEdges))
+                if (!Graph.TryGetOutEdges(currentNode, out IEnumerable<TspEdge> currentNodeEdges))
                     break;
 
-                // can assume that's possibleEdges is not null/empty because if currentNode don't have out edges will break loop
+                List<TspEdge> possibleEdges = ExtractPossibleEdges(currentNode, currentNodeEdges);
+
+                if (possibleEdges.IsEmpty())
+                    break;
+
                 var selectedEdge = ChooseNextStep(possibleEdges);
                 Path.Add(selectedEdge);
                 currentNode = selectedEdge.Target;
-
+                UnvisitedNodes.Remove(currentNode);
                 // hit first node again
-                if (selectedEdge.Target == StartNode && Path.Count > 1)
+                if (selectedEdge.Target == StartNode && UnvisitedNodes.IsEmpty())
                 {
                     UpdatePheromone();
                     break;
                 }
 
             }
+        }
+
+        private List<TspEdge> ExtractPossibleEdges(int currentNode, IEnumerable<TspEdge> currentNodeEdges)
+        {
+            // possible edges to ant visit are unvisited edges and an edge from start node if all are visited
+            var possibleEdges = currentNodeEdges.Where(edge => UnvisitedNodes.Contains(edge.Target)).ToList();
+            if (UnvisitedNodes.IsEmpty() && Graph.TryGetEdge(currentNode, StartNode, out TspEdge cycleEdge))
+                possibleEdges.Add(cycleEdge);
+            return possibleEdges;
         }
 
         private TspEdge ChooseNextStep(IEnumerable<TspEdge> possibleEdges)
@@ -61,8 +77,8 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
             possibleEdges.ToList().ForEach(edge =>
             {
                 // assume that x = edge.Start and y = edge.Target
-                var tauK_xy = SafeDiv(1, edge.Weight); // inverso da distancia entre edge.Start e edge.Target
-                var etaK_xy = SafeDiv(edge.Pheromone, edge.Weight);// concentração de feromonio entre edge.Start e edge.Target
+                var tauK_xy = edge.Weight.Inverse(); // inverso da distancia entre edge.Start e edge.Target
+                var etaK_xy = edge.Pheromone.DividedBy(edge.Weight);// concentração de feromonio entre edge.Start e edge.Target
                 var factor = Math.Pow(tauK_xy, AntColonyOptimizationAlgorithm.ALPHA) * Math.Pow(etaK_xy, AntColonyOptimizationAlgorithm.BETA);
                 roulette.AddItem(edge, factor);
             });
@@ -70,17 +86,15 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
             // calculate the probability pK of the ant k choosing each edge
             // then we draw one based on probability
             return roulette.SelectItem();
-            
-            static double SafeDiv(double a, double b)
-            {
-                if (b == 0) return 0;
-                return a / b;
-            }
         }
 
         private void UpdatePheromone()
         {
-
+            foreach(var step in Path)
+            {
+                step.EvaporatePheromone(rate: AntColonyOptimizationAlgorithm.RHO);
+                step.DepositPheromone(amount: AntColonyOptimizationAlgorithm.PHEROMONE_UPDATE_CONSTANT.DividedBy(PathDistance));
+            }
         }
     }
 }
