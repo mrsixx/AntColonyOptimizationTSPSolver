@@ -13,9 +13,10 @@ namespace AntColonyOptimizationTSPSolver.Core.Graph
 
         public int Source { get; }
 
-
         public int Target { get; }
 
         public double Weight { get; }
+
+        public double Pheromone { get; set; } = 0.0001;
     }
 }

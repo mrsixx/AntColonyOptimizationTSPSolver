@@ -1,18 +1,22 @@
-﻿using AntColonyOptimizationTSPSolver.Core.Graph;
+﻿using AntColonyOptimizationTSPSolver.Core.ACO;
+using AntColonyOptimizationTSPSolver.Core.Extensions;
+using AntColonyOptimizationTSPSolver.Core.Graph;
 using AntColonyOptimizationTSPSolver.Core.Interfaces;
 using TspLibNet;
 
 namespace AntColonyOptimizationTSPSolver.Core
 {
-    public class Class1
+    public class Solver
     {
+        private readonly IAntColonyOptimizationAlgorithm _acoAlgorithm;
         private readonly IConfiguration _configuration;
         private readonly ILogger _logger;
 
-        public Class1(IConfiguration configuration, ILogger logger)
+        public Solver(IConfiguration configuration, ILogger logger)
         {
             _configuration = configuration;
             _logger = logger;
+            _acoAlgorithm = new AntColonyOptimizationAlgorithm(logger, 1, 1);
         }
 
         public void Run()
@@ -22,10 +26,16 @@ namespace AntColonyOptimizationTSPSolver.Core
                 var tsp = LoadTsp(_configuration.ProblemName, ProblemType.TSP);
                 //var dantzig42 = LoadTSPDantzig42();
                 //var brazil58 = LoadTSPBrazil58();
-                LoadTspGraph(tsp.Problem);
+                var graph = LoadTspGraph(tsp.Problem);
+                var path = _acoAlgorithm.Solve(graph);
 
+                _logger.Log($"Best distance: {path.CalculateDistance()}");
+                foreach(var edge in path)
+                    _logger.Log($"{edge.Source} --{edge.Weight}--> {edge.Target}");
             }
-            catch (Exception) { }
+            catch (Exception e) {
+                Console.WriteLine(e.ToString());
+            }
         }
 
         private TspLib95Item LoadTSPDantzig42() => LoadTsp("dantzig42", ProblemType.TSP);
@@ -54,7 +64,7 @@ namespace AntColonyOptimizationTSPSolver.Core
                     if(problem.EdgeProvider.HasEdge(source, target))
                     {
                         var weight = problem.EdgeWeightsProvider.GetWeight(source, target);
-                        graph.AddEdge(new TspEdge(source.Id, source.Id, weight));
+                        graph.AddEdge(new TspEdge(source.Id, target.Id, weight));
                     }
                 });
             });
