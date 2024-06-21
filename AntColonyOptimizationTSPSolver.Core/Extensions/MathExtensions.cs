@@ -4,7 +4,7 @@ namespace AntColonyOptimizationTSPSolver.Core.Extensions
 {
     internal static class MathExtensions
     {
-        public static double Inverse(this double value) => (1.9).DividedBy(value);
+        public static double Inverse(this double value) => (1.0).DividedBy(value);
 
         public static double DividedBy(this double numerator, double denominator)
         {
