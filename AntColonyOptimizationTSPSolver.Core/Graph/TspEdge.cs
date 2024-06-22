@@ -8,7 +8,7 @@ namespace AntColonyOptimizationTSPSolver.Core.Graph
     public class TspEdge : IEdge<int>
     {
         private readonly object _lock = new();
-        private double _pheromoneAmount = AntColonyOptimizationAlgorithm.INITIAL_PHEROMONE_AMOUNT;
+        private double _pheromoneAmount = 0;
         public TspEdge(int source, int target, double weight)
         {
             Source = source;
@@ -39,7 +39,6 @@ namespace AntColonyOptimizationTSPSolver.Core.Graph
             {
                 var old = _pheromoneAmount;
                 _pheromoneAmount = (1 - rate) * _pheromoneAmount;
-                //Console.WriteLine($"{Source}->{Target}: evaporate {old} to {_pheromoneAmount}");
             }
         }
 
@@ -47,9 +46,7 @@ namespace AntColonyOptimizationTSPSolver.Core.Graph
         {
             lock (_lock)
             {
-
                 _pheromoneAmount += amount;
-                //Console.WriteLine($"{Source}->{Target}: deposited {amount} to {_pheromoneAmount}");
             }
         }
     }

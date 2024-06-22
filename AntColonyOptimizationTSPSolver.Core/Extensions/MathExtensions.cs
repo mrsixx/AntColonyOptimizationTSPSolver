@@ -12,5 +12,8 @@ namespace AntColonyOptimizationTSPSolver.Core.Extensions
                 return 0;
             return numerator / denominator;
         }
+
+        public static double CalculateRelativeError(this double approximateValue, double exactValue) => 
+            Math.Abs(approximateValue - exactValue).DividedBy(exactValue) * 100;
     }
 }

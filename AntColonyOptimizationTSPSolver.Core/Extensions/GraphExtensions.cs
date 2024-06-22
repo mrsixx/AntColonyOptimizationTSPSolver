@@ -15,6 +15,9 @@ namespace AntColonyOptimizationTSPSolver.Core.Extensions
             return path.Aggregate(0.0, (acc, edge) => acc + edge.Weight);
         }
 
+        public static double CalculateTotalPheromoneAmount(this TspGraph graph) => graph.Edges.Sum(s => s.Pheromone);
+        public static double CalculateAvgPheromoneAmount(this TspGraph graph) => graph.Edges.Aggregate(0.0, (acc, edge) => acc + (edge.Pheromone * edge.Weight.Inverse()))
+                                                                                            .DividedBy(graph.Edges.Sum(e => e.Weight.Inverse()));
         public static TspEdge GetRandomEdge(this IEnumerable<TspEdge> @enumerable) => @enumerable.ElementAt(rng.Next(@enumerable.Count()));
 
         public static void LogPath(this ILogger logger, IEnumerable<TspEdge> path)

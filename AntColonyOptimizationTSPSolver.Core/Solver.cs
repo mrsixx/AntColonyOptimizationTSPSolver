@@ -8,7 +8,6 @@ namespace AntColonyOptimizationTSPSolver.Core
 {
     public class Solver
     {
-        private readonly IAntColonyOptimizationAlgorithm _acoAlgorithm;
         private readonly IConfiguration _configuration;
         private readonly ILogger _logger;
 
@@ -16,7 +15,6 @@ namespace AntColonyOptimizationTSPSolver.Core
         {
             _configuration = configuration;
             _logger = logger;
-            _acoAlgorithm = new AntColonyOptimizationAlgorithm(logger, antCount: 300, iterations: 100);
         }
 
         public void Run()
@@ -26,12 +24,24 @@ namespace AntColonyOptimizationTSPSolver.Core
                 var tsp = LoadTsp(_configuration.ProblemName, ProblemType.TSP);
                 //var dantzig42 = LoadTSPDantzig42();
                 //var brazil58 = LoadTSPBrazil58();
-                var graph = LoadTspGraph(tsp.Problem);
-                var path = _acoAlgorithm.Solve(graph);
 
+                var graph = LoadTspGraph(tsp.Problem);
+                var aco = new AntColonyOptimizationAlgorithm(graph,
+                    alpha: 0.9,
+                    beta: 1.2,
+                    rho: 0.01,
+                    q: 5000,
+                    ants: 10000,
+                    initialPheromoneAmount: 0.001,
+                    iterations: 5).WithLogger(_logger);
+                var bestPath = aco.Solve();
+
+                var bestDistance = bestPath.CalculateDistance();
+                
                 _logger.Log($"Known optimal TSP solution: {tsp.OptimalTourDistance}");
-                _logger.Log($"Best distance: {path.CalculateDistance()}");
-                _logger.LogPath(path);
+                _logger.Log($"Best distance: {bestDistance}");
+                _logger.Log($"Error: {bestDistance.CalculateRelativeError(exactValue: tsp.OptimalTourDistance)}%");
+                _logger.LogPath(bestPath);
             }
             catch (Exception e) {
                 Console.WriteLine(e.ToString());

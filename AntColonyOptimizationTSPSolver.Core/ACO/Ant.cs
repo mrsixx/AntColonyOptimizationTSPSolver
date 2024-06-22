@@ -6,12 +6,12 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
 {
     internal class Ant
     {
-        public Ant(int id, int generation, TspGraph graph)
+        public Ant(int id, int generation, AntColonyOptimizationAlgorithm context)
         {
             Id = id;
             Generation = generation;
-            Graph = graph;
-            UnvisitedNodes = graph.Vertices.ToList();
+            Context = context;
+            UnvisitedNodes = Context.Graph.Vertices.ToList();
             Task = new Task(() => WalkAround());
             Task.Start();
         }
@@ -22,13 +22,16 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
 
         public int StartNode { get; private set; }
 
-        public TspGraph Graph { get; }
+        public AntColonyOptimizationAlgorithm Context { get; }
+
 
         public List<int> UnvisitedNodes { get; }
         
         public Task Task { get; }
 
         public List<TspEdge> Path { get; } = new List<TspEdge>();
+
+        public TspGraph Graph => Context.Graph;
 
         public double PathDistance => Path.CalculateDistance();
 
@@ -79,7 +82,7 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
                 // assume that x = edge.Start and y = edge.Target
                 var tauK_xy = edge.Weight.Inverse(); // inverso da distancia entre edge.Start e edge.Target
                 var etaK_xy = edge.Pheromone.DividedBy(edge.Weight);// concentração de feromonio entre edge.Start e edge.Target
-                var factor = Math.Pow(tauK_xy, AntColonyOptimizationAlgorithm.ALPHA) * Math.Pow(etaK_xy, AntColonyOptimizationAlgorithm.BETA);
+                var factor = Math.Pow(tauK_xy, Context.Alpha) * Math.Pow(etaK_xy, Context.Beta);
                 roulette.AddItem(edge, factor);
             });
 
@@ -92,8 +95,8 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
         {
             foreach(var step in Path)
             {
-                step.EvaporatePheromone(rate: AntColonyOptimizationAlgorithm.RHO);
-                step.DepositPheromone(amount: AntColonyOptimizationAlgorithm.PHEROMONE_UPDATE_CONSTANT.DividedBy(PathDistance));
+                step.EvaporatePheromone(rate: Context.Rho);
+                step.DepositPheromone(amount: Context.Q.DividedBy(PathDistance));
             }
         }
     }
