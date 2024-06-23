@@ -6,8 +6,6 @@ namespace AntColonyOptimizationTSPSolver.Core.Extensions
 {
     public static class GraphExtensions
     {
-        private static Random rng = new Random();
-
         public static double CalculateDistance(this IEnumerable<TspEdge> path)
         {
             if(path is null) throw new ArgumentNullException(nameof(path));
@@ -18,7 +16,7 @@ namespace AntColonyOptimizationTSPSolver.Core.Extensions
         public static double CalculateTotalPheromoneAmount(this TspGraph graph) => graph.Edges.Sum(s => s.Pheromone);
         public static double CalculateAvgPheromoneAmount(this TspGraph graph) => graph.Edges.Aggregate(0.0, (acc, edge) => acc + (edge.Pheromone * edge.Weight.Inverse()))
                                                                                             .DividedBy(graph.Edges.Sum(e => e.Weight.Inverse()));
-        public static TspEdge GetRandomEdge(this IEnumerable<TspEdge> @enumerable) => @enumerable.ElementAt(rng.Next(@enumerable.Count()));
+        public static TspEdge GetRandomEdge(this IEnumerable<TspEdge> @enumerable) => @enumerable.ElementAt(Utils.Math.Random.Next(@enumerable.Count()));
 
         public static void LogPath(this ILogger logger, IEnumerable<TspEdge> path)
         {

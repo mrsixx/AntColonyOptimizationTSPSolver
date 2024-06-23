@@ -4,7 +4,6 @@ namespace AntColonyOptimizationTSPSolver.Core.Utils
 {
     internal class RouletteWheelSelection<T>
     {
-        public static Random rnd = new Random();
         public IList<RouletteWheelItem<T>> Items { get; } = new List<RouletteWheelItem<T>>();
 
         public void AddItem(T item, double chance)
@@ -30,7 +29,7 @@ namespace AntColonyOptimizationTSPSolver.Core.Utils
                 sum += item.Chance;
 
             double accum = 0.0;
-            double p = rnd.NextDouble();
+            double p = Math.Random.NextDouble();
 
             for (int i = 0; i < n; ++i) {
                 accum += (Items[i].Chance / sum);

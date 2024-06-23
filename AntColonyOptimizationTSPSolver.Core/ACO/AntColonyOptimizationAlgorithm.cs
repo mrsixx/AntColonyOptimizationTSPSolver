@@ -75,7 +75,7 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
         public IList<TspEdge> Solve()
         {
             Log($"Starting ACO algorithm with following parameters:");
-            Log($"Alpha = {Alpha}; Beta = {Beta}; Rho = {Rho}; Q = {Q}.");
+            Log($"Alpha = {Alpha}; Beta = {Beta}; Rho = {Rho}; Q = {Q}; Initial pheromone = {InitialPheromoneAmount}.");
             
             Stopwatch sw = new();
             Colony colony = new();
@@ -94,7 +94,7 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
             }
             sw.Stop();
 
-            Log($"Every ant has stoped after {sw.Elapsed}...");
+            Log($"Every ant has stopped after {sw.Elapsed}...");
             Log($"\nFinishing execution...");
 
             if(colony.EmployeeOfTheMonth is not null)

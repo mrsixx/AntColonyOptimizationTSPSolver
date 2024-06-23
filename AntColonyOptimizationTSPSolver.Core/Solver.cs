@@ -21,9 +21,8 @@ namespace AntColonyOptimizationTSPSolver.Core
         {
             try
             {
-                var tsp = LoadTsp(_configuration.ProblemName, ProblemType.TSP);
-                //var dantzig42 = LoadTSPDantzig42();
-                //var brazil58 = LoadTSPBrazil58();
+                var tsp = LoadTsp("dantzig42", ProblemType.TSP);
+                //var tsp = LoadTsp("brazil58", ProblemType.TSP);
 
                 var graph = LoadTspGraph(tsp.Problem);
                 var aco = new AntColonyOptimizationAlgorithm(graph,
@@ -31,9 +30,9 @@ namespace AntColonyOptimizationTSPSolver.Core
                     beta: 1.2,
                     rho: 0.01,
                     q: 5000,
-                    ants: 10000,
+                    ants: 1000,
                     initialPheromoneAmount: 0.001,
-                    iterations: 5).WithLogger(_logger);
+                    iterations: 8).WithLogger(_logger);
                 var bestPath = aco.Solve();
 
                 var bestDistance = bestPath.CalculateDistance();
@@ -47,9 +46,6 @@ namespace AntColonyOptimizationTSPSolver.Core
                 Console.WriteLine(e.ToString());
             }
         }
-
-        private TspLib95Item LoadTSPDantzig42() => LoadTsp("dantzig42", ProblemType.TSP);
-        private TspLib95Item LoadTSPBrazil58() => LoadTsp("brazil58", ProblemType.TSP);
 
         private TspLib95Item LoadTsp(string problemName, ProblemType type)
         {

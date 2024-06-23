@@ -17,7 +17,7 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
             foreach (var ant in ants)
             {
                 var bestPathIsEmpty = BestPath.IsEmpty();
-                var antFoundBetterPath = ant.PathDistance <= BestPath.CalculateDistance();
+                var antFoundBetterPath = ant.PathDistance < BestPath.CalculateDistance();
                 if (bestPathIsEmpty || antFoundBetterPath)
                 {
                     BestPath = ant.Path;

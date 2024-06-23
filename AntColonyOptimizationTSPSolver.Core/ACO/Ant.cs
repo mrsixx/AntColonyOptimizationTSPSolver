@@ -37,7 +37,7 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
 
         private void WalkAround()
         {
-            StartNode = new Random().Next(1, Graph.VertexCount);
+            StartNode = Utils.Math.Random.Next(1, Graph.VertexCount);
             UnvisitedNodes.Remove(StartNode);
             var currentNode = StartNode;
             while (true)
@@ -82,7 +82,7 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
                 // assume that x = edge.Start and y = edge.Target
                 var tauK_xy = edge.Weight.Inverse(); // inverso da distancia entre edge.Start e edge.Target
                 var etaK_xy = edge.Pheromone.DividedBy(edge.Weight);// concentração de feromonio entre edge.Start e edge.Target
-                var factor = Math.Pow(tauK_xy, Context.Alpha) * Math.Pow(etaK_xy, Context.Beta);
+                var factor = System.Math.Pow(tauK_xy, Context.Alpha) * System.Math.Pow(etaK_xy, Context.Beta);
                 roulette.AddItem(edge, factor);
             });
 
