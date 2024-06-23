@@ -2,6 +2,6 @@
 {
     internal static class Math
     {
-        public static Random Random = new(Guid.NewGuid().GetHashCode());
+        public static Random Random = Random.Shared;
     }
 }

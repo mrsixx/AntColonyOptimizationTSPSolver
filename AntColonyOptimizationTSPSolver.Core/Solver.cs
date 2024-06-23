@@ -21,26 +21,35 @@ namespace AntColonyOptimizationTSPSolver.Core
         {
             try
             {
-                var tsp = LoadTsp("dantzig42", ProblemType.TSP);
-                //var tsp = LoadTsp("brazil58", ProblemType.TSP);
+                //var tsp = LoadTsp("dantzig42", ProblemType.TSP);
+                var tsp = LoadTsp("brazil58", ProblemType.TSP);
+                double quadraticError = 0;
+                double numberOfTests = 10;
+                for(int i = 0; i < numberOfTests; i++)
+                {
+                    _logger.Log($"Test #{i + 1} starting");
+                    var graph = LoadTspGraph(tsp.Problem);
+                    var aco = new AntColonyOptimizationAlgorithm(graph,
+                        alpha: 1.3,
+                        beta: 0.9,
+                        rho: 0.08,
+                        q: 5000,
+                        ants: 100,
+                        initialPheromoneAmount: 0.001,
+                        iterations: 10).Verbose(_logger);
+                    var bestPath = aco.Solve();
 
-                var graph = LoadTspGraph(tsp.Problem);
-                var aco = new AntColonyOptimizationAlgorithm(graph,
-                    alpha: 0.9,
-                    beta: 1.2,
-                    rho: 0.01,
-                    q: 5000,
-                    ants: 1000,
-                    initialPheromoneAmount: 0.001,
-                    iterations: 8).WithLogger(_logger);
-                var bestPath = aco.Solve();
+                    var bestDistance = bestPath.CalculateDistance();
+                    var relativeError = bestDistance.CalculateRelativeError(exactValue: tsp.OptimalTourDistance);
+                    quadraticError += Math.Pow(tsp.OptimalTourDistance - bestDistance, 2);
+                    _logger.Log($"Known optimal TSP solution: {tsp.OptimalTourDistance}");
+                    _logger.Log($"Best distance: {bestDistance}");
+                    _logger.Log($"Test #{i+1} relative Error: {relativeError}%");
+                    _logger.LogPath(bestPath);
+                    _logger.Log("\n\n\n");
+                }
 
-                var bestDistance = bestPath.CalculateDistance();
-                
-                _logger.Log($"Known optimal TSP solution: {tsp.OptimalTourDistance}");
-                _logger.Log($"Best distance: {bestDistance}");
-                _logger.Log($"Error: {bestDistance.CalculateRelativeError(exactValue: tsp.OptimalTourDistance)}%");
-                _logger.LogPath(bestPath);
+                _logger.Log($"REMQ: {Math.Sqrt(quadraticError / numberOfTests)}");
             }
             catch (Exception e) {
                 Console.WriteLine(e.ToString());
@@ -59,7 +68,6 @@ namespace AntColonyOptimizationTSPSolver.Core
         
         private TspGraph LoadTspGraph(IProblem problem)
         {
-            //var graph = new TspGraph(problem.NodeProvider.CountNodes());
             var graph = new TspGraph();
             problem.NodeProvider.GetNodes().ForEach(node => graph.AddVertex(node.Id));
             problem.NodeProvider.GetNodes().ForEach(source =>

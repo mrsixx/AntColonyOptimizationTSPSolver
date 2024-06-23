@@ -10,6 +10,17 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
     public class AntColonyOptimizationAlgorithm : IAntColonyOptimizationAlgorithm
     {
         private ILogger? _logger;
+        /// <summary>
+        /// TSP solver using the Ant Colony Optimization method
+        /// </summary>
+        /// <param name="graph">Graph on which the TSP was modeled</param>
+        /// <param name="alpha">Weight of distance factor constant</param>
+        /// <param name="beta">Weight of pheromone factor constant</param>
+        /// <param name="rho">Pheromone evaporation rate constant</param>
+        /// <param name="q">Pheromone Update constant</param>
+        /// <param name="initialPheromoneAmount">Initial pheromone amount over graph edges</param>
+        /// <param name="ants">Amount of ants</param>
+        /// <param name="iterations">Number of iterations</param>
         public AntColonyOptimizationAlgorithm(TspGraph graph,
                                               double alpha = 0.9,
                                               double beta = 1.2,
@@ -66,7 +77,7 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
 
         public TspGraph Graph { get; }
 
-        public AntColonyOptimizationAlgorithm WithLogger(ILogger logger)
+        public AntColonyOptimizationAlgorithm Verbose(ILogger logger)
         {
             _logger = logger;
             return this;
@@ -78,23 +89,25 @@ namespace AntColonyOptimizationTSPSolver.Core.ACO
             Log($"Alpha = {Alpha}; Beta = {Beta}; Rho = {Rho}; Q = {Q}; Initial pheromone = {InitialPheromoneAmount}.");
             
             Stopwatch sw = new();
+            Stopwatch iSw = new();
             Colony colony = new();
             sw.Start();
             Graph.SetInitialPheromoneAmount(InitialPheromoneAmount);
             for (int i = 0; i < Iterations; i++)
             {
                 Log($"\nGenerating {AntCount} artificial ants from #{i + 1}th wave...");
-                Log($"Graph total amount of pheromone on #{i + 1}th wave: {Graph.CalculateTotalPheromoneAmount()}");
-                Log($"Graph average amount of pheromone on #{i + 1}th wave: {Graph.CalculateAvgPheromoneAmount()}");
+                Log($"Graph pheromone on #{i + 1}th wave: total = {Graph.CalculateTotalPheromoneAmount()}; average = {Graph.CalculateAvgPheromoneAmount()}");
+                iSw.Restart();
                 Ant[] ants = GenerateAntsWave(generation: i+1);
                 Log($"#{i + 1}th wave ants start to walk...");
                 WaitForAntsToStop(ants);
-                Log($"#{i + 1}th wave ants has stopped!");
+                iSw.Stop();
+                Log($"#{i + 1}th wave ants has stopped after {iSw.Elapsed}!");
                 colony.UpdateBestPath(ants);
             }
             sw.Stop();
 
-            Log($"Every ant has stopped after {sw.Elapsed}...");
+            Log($"Every ant has stopped after {sw.Elapsed}.");
             Log($"\nFinishing execution...");
 
             if(colony.EmployeeOfTheMonth is not null)
